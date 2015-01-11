@@ -1,0 +1,37 @@
+{
+  "version": "0.0.0",
+  "description": "",
+  "window": {
+    "title": "DNA",
+    "toolbar": false,
+    "frame": true,
+    "width": 962,
+    "height": 600,
+    "min_width": 962,
+    "min_height": 600,
+    "resizable": true
+  },
+  "name": "DNA",
+  "main": "src/index.html",
+  "dependencies": {
+    "grunt-init": "~0.3.1"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "grunt-node-webkit-builder": "^0.1.20",
+    "grunt-cli": "0.1.6",
+    "grunt-contrib-jshint": "~0.1.1",
+    "grunt-contrib-cssmin": "^0.9.0",
+    "grunt-min": "^0.1.0",
+    "grunt-jsdoc": "^0.5.7"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
