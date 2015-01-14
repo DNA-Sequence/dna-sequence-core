@@ -31,6 +31,9 @@
  * Licensed
  */
 
+
+var arrayMismatch = {};
+
 /**
  *
  * @param date
@@ -55,17 +58,6 @@ $(function () {
         $("body").i18n();
     });
 
-    $("#gapLocal").hide();
-    $("#gapGlobal").hide();
-
-    $('#checkLocal').click(function () {
-        if ($(this).is(':checked')) {
-            $("#gapLocal").show();
-        } else {
-            $("#gapLocal").hide();
-        }
-    });
-
     $('#btnDELETE').click(function () {
         if ($('#listAlign input:checked:first').val()) {
             $('#listAlign input:checked').each(function () {
@@ -83,13 +75,14 @@ $(function () {
         }
     });
 
-    $('#checkGlobal').click(function () {
-        if ($(this).is(':checked')) {
-            $("#gapGlobal").show();
-        } else {
-            $("#gapGlobal").hide();
+    $('#btnAdd').click(function () {
+//        tableArray
+        if ($('#valueA').val() && $('#valueB').val() && $('#arraymismatch').val()) {
+            $('#tableArray').append("&lt;tr>&lt;td>&lt;label>" + $('#valueA').val() + "-" + $('#valueB').val() + "&lt;/label>&lt;/td>&lt;td>&lt;label>" + $('#arraymismatch').val() + "&lt;/label>&lt;/td>&lt;/tr>");
+            window.arrayMismatch[$('#valueA').val() + "-" + $('#valueB').val()] = parseInt($('#arraymismatch').val());
         }
     });
+
 
     $('#saveNew').click(function () {
         /** type Array */
@@ -101,23 +94,30 @@ $(function () {
         line.sequenceA = $("#dsSequenceA").val();
         line.sequenceB = $("#dsSequenceB").val();
 
+        line.gap = $("#gap").val();
+        line.match = $("#match").val();
+        line.misMatch = $("#mismatch").val();
+
+        line.arrayMisMatch = arrayMismatch;
+
         if ($('#checkGlobal').is(':checked')) {
             line.methodSequencing = "GLOBAL";
-            line.gap = $("#Ggap").val();
-            line.match = $("#Gmatch").val();
-            line.misMatch = $("#Gmismatch").val();
             line.id = findNextAlign(tableAlign);
             tableAlign.push(JSON.parse(JSON.stringify(line)));
         }
 
         if ($('#checkLocal').is(":checked")) {
             line.methodSequencing = "LOCAL";
-            line.gap = $("#Lgap").val();
-            line.match = $("#Lmatch").val();
-            line.misMatch = $("#Lmismatch").val();
             line.id = findNextAlign(tableAlign);
             tableAlign.push(JSON.parse(JSON.stringify(line)));
         }
+
+        if ($('#checkSemiGlobal').is(':checked')) {
+            line.methodSequencing = "SEMIGLOBAL";
+            line.id = findNextAlign(tableAlign);
+            tableAlign.push(JSON.parse(JSON.stringify(line)));
+        }
+
 
         refreshList(tableAlign);
     });
@@ -214,13 +214,13 @@ function findNextAlign(tableAlign) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="EventOpenAlign.html">EventOpenAlign</a></li><li><a href="ObjectOpenAlign.html">ObjectOpenAlign</a></li><li><a href="ProcessOpenAlign.html">ProcessOpenAlign</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_importScripts">_importScripts</a></li><li><a href="global.html#findNextAlign">findNextAlign</a></li><li><a href="global.html#formattedDate">formattedDate</a></li><li><a href="global.html#ImportScripts">ImportScripts</a></li><li><a href="global.html#openAlign">openAlign</a></li><li><a href="global.html#refreshList">refreshList</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#widthDefault">widthDefault</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AbstractCalculation.html">AbstractCalculation</a></li><li><a href="Calculation.html">Calculation</a></li><li><a href="CalculationFactory.html">CalculationFactory</a></li><li><a href="CalculationGlobal.html">CalculationGlobal</a></li><li><a href="CalculationLocal.html">CalculationLocal</a></li><li><a href="CalculationSemiGlobal.html">CalculationSemiGlobal</a></li><li><a href="EventOpenAlign.html">EventOpenAlign</a></li><li><a href="InputAlign.html">InputAlign</a></li><li><a href="InputAlignGlobalLocal.html">InputAlignGlobalLocal</a></li><li><a href="InputResultAlign.html">InputResultAlign</a></li><li><a href="Matrix.html">Matrix</a></li><li><a href="Node.html">Node</a></li><li><a href="NodeController.html">NodeController</a></li><li><a href="NodeDetail.html">NodeDetail</a></li><li><a href="ObjectOpenAlign.html">ObjectOpenAlign</a></li><li><a href="OrganizeNode.html">OrganizeNode</a></li><li><a href="OutputAlign.html">OutputAlign</a></li><li><a href="OutputResultAlign.html">OutputResultAlign</a></li><li><a href="ProcessOpenAlign.html">ProcessOpenAlign</a></li><li><a href="window.StringBuffer.html">StringBuffer</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_importScripts">_importScripts</a></li><li><a href="global.html#Connected">Connected</a></li><li><a href="global.html#findNextAlign">findNextAlign</a></li><li><a href="global.html#formattedDate">formattedDate</a></li><li><a href="global.html#ImportScripts">ImportScripts</a></li><li><a href="global.html#MethodSequencing">MethodSequencing</a></li><li><a href="global.html#openAlign">openAlign</a></li><li><a href="global.html#refreshList">refreshList</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#TypeElement">TypeElement</a></li><li><a href="global.html#widthDefault">widthDefault</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Sep 04 2014 20:31:38 GMT-0300 (BRT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Jan 13 2015 23:10:26 GMT-0200 (BRST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -111,6 +111,7 @@ ObjectOpenAlign.createFieldPossibility = function (connect, text) {
     var align = this.createAlign(connect, text);
 
     htmlP.onclick = function () {
+        EventOpenAlign.elementManualCurrent = null;
         EventOpenAlign.clickFieldPossibility(align);
     };
 
@@ -243,7 +244,7 @@ ObjectOpenAlign.mountTableResult = function (resultSequenceA, resultSequenceB) {
  *
  * @param rect
  */
-ObjectOpenAlign.verifyNode = function (rect) {
+ObjectOpenAlign.verifyNode = function (rect, openManual) {
     var align = this.alignCurrent;
 
     if (rect) {
@@ -252,30 +253,58 @@ ObjectOpenAlign.verifyNode = function (rect) {
 
         var node = this.nodes[x][y];
 
+        if (ProcessOpenAlign.calculation.methodSequencing === dna.MethodSequencing.LOCAL || ProcessOpenAlign.calculation.methodSequencing === dna.MethodSequencing.SEMIGLOBAL) {
+            if (!align.nodeBack) {
+                align.nodeBack = node;
+            }
+        }
+
         align.dataRetorn = ProcessOpenAlign.calculation.nodeVicinity(align.dataRetorn, align.nodeBack, node);
         align.nodeBack = node;
+    } else {
+        if(!openManual){
+            align.dataRetorn = ProcessOpenAlign.calculation.nodeVicinity(align.dataRetorn, null, null);
+        }
     }
 
-    var nodesC = align.dataRetorn.arrayNode;
 
-    var nodesAlign = align.dataRetorn.arrayNodeAlign;
+    var nodesC = null;
 
+    if (align.dataRetorn.arrayNode) {
+        nodesC = align.dataRetorn.arrayNode;
+    }
+
+
+    var nodesAlign = null;
+
+    if (align.dataRetorn.arrayNodeAlign) {
+        nodesAlign = align.dataRetorn.arrayNodeAlign;
+    }
+
+    $("#matrix rect").attr('class', 'noAlign');
     $("#matrix rect[cand='true']").attr('class', 'alignCandidate');
+
 
     $("#tableResult").html(ObjectOpenAlign.mountTableResult(align.dataRetorn.sbSeqA.toString(), align.dataRetorn.sbSeqB.toString()));
 
-    for (var i = 0; i &lt; nodesC.length; i++) {
-        var nodeC = nodesC[i];
-        $("#matrix rect[vx=" + nodeC.x + "][vy=" + nodeC.y + "]").attr('class', 'alignCandidateSelect');
+    if (nodesC) {
+        for (var i = 0; i &lt; nodesC.length; i++) {
+            var nodeC = nodesC[i];
+            $("#matrix rect[vx=" + nodeC.x + "][vy=" + nodeC.y + "]").attr('class', 'alignCandidateSelect');
+        }
     }
 
-    for (i = 0; i &lt; nodesAlign.length; i++) {
-        var nodeAlign = nodesAlign[i];
-        $("#matrix rect[vx=" + nodeAlign.x + "][vy=" + nodeAlign.y + "]").attr('class', 'alignSelect');
+    if (nodesAlign) {
+        for (i = 0; i &lt; nodesAlign.length; i++) {
+            var nodeAlign = nodesAlign[i];
+            $("#matrix rect[vx=" + nodeAlign.x + "][vy=" + nodeAlign.y + "]").attr('class', 'alignSelect');
+        }
     }
 
 
     $(rect).attr('class', 'alignSelectNow');
+
+    EventOpenAlign.updateScoreManual(align.dataRetorn.score);
 
     EventOpenAlign.resetScrollMatrix();
 };
@@ -314,6 +343,18 @@ ObjectOpenAlign.openDetailRect = function (element) {
     $('#DetailCalcNW').html(nodeDetail.nodeCalcNW);
     $('#DetailCalcW').html(nodeDetail.nodeCalcW);
 
+
+    $('#DetailSumN').html(nodeDetail.nodeSumN);
+    $('#DetailSumNW').html(nodeDetail.nodeSumNW);
+    $('#DetailSumW').html(nodeDetail.nodeSumW);
+
+    $('#DetailSeqA').html(node.charSeqA);
+    $('#DetailSeqB').html(node.charSeqB);
+
+
+
+
+
     for (var i = 0; i &lt; node.connected.length; i++) {
         $('#DetailConnect' + node.connected[i]).show();
     }
@@ -335,6 +376,25 @@ var EventOpenAlign = {
 
 /**
  *
+ * @type {HTMLElement|*}
+ */
+EventOpenAlign.elementManualCurrent = null;
+
+/**
+ * updateScoreManual
+ */
+EventOpenAlign.updateScoreManual = function (score) {
+
+    if (this.elementManualCurrent) {
+        var num = this.elementManualCurrent.getAttribute('num');
+        this.elementManualCurrent.setAttribute('score', score);
+
+        this.elementManualCurrent.innerHTML = "Manual " + num + ": " + score;
+    }
+}
+
+/**
+ *
  * @param {dna.OutputResultAlign}
  */
 EventOpenAlign.clickFieldPossibility = function (align) {
@@ -349,7 +409,7 @@ EventOpenAlign.clickFieldPossibility = function (align) {
 
     $("#tableResult").html(ObjectOpenAlign.mountTableResult(align.result.resultSequenceA, align.result.resultSequenceB));
 
-    $("#matrix").height($('body').height() - $(".menuDown").height() - $(".menuUp").height() - 10);
+    $("#matrix").height($('body').height() - $(".menuDown").height() - $(".menuUp").height() - 80);
     $("#matrix").width($('body').width() - 260);
 
 };
@@ -406,6 +466,18 @@ EventOpenAlign.scaleMatrix = function (value) {
     $('#matrix svg text').css('font', value + 'px sans-serif;');
     $('.valueTextCandidate').css('font-size', value / 2);
     $('.valueText').css('font-size', value / 2);
+
+
+    $("#matrix Text").undelegate("dblclick").dblclick(function () {
+        try {
+            ObjectOpenAlign.openDetailRect($("#matrix rect[vx=" + this.getAttribute("vx") + "][vy=" + this.getAttribute("vy") + "]")[0]);
+        } catch (e) {
+        }
+    });
+
+    $("#matrix rect").undelegate("dblclick").dblclick(function () {
+        ObjectOpenAlign.openDetailRect(this);
+    });
 };
 
 /**
@@ -427,7 +499,7 @@ EventOpenAlign.clickElementRect = function (ele) {
         $(".alignSelectNow").attr("class", "alignSelect");
         $(".alignCandidateSelect").attr("class", "alignCandidate");
         $(ele).attr("class", "alignSelectNow");
-        ObjectOpenAlign.verifyNode(ele);
+        ObjectOpenAlign.verifyNode(ele, false);
     }
 
 };
@@ -438,15 +510,23 @@ EventOpenAlign.clickElementRect = function (ele) {
 EventOpenAlign.clickPossibilityManual = function () {
 
     var p = document.createElement("p");
-    p.innerHTML = "Manual " + (ObjectOpenAlign.listAlign.length + 1) + ": ";
+    p.setAttribute('num', (ObjectOpenAlign.listAlign.length + 1));
+    p.setAttribute('score', 0);
+
+    p.innerHTML = "Manual " + (ObjectOpenAlign.listAlign.length + 1) + ": 0";
 
     var align = new ObjectOpenAlign.Align();
     align.name = p.innerHTML;
     ObjectOpenAlign.listAlign.push(align);
+    EventOpenAlign.elementManualCurrent = p;
+    $("#matrix rect").attr('class', 'noAlign');
+    $("#matrix rect[cand='true']").attr('class', 'alignCandidate');
+
 
     p.onclick = function () {
+        EventOpenAlign.elementManualCurrent = p;
         ObjectOpenAlign.alignCurrent = align;
-        ObjectOpenAlign.verifyNode(null);
+        ObjectOpenAlign.verifyNode(null, true);
     };
 
     setTimeout(function () {
@@ -463,7 +543,7 @@ EventOpenAlign.clickPossibilityManual = function () {
 
             var rect = $("#matrix rect[vx=" + node.x + "][vy=" + node.y + "]").attr('class', 'alignSelectNow');
 
-            ObjectOpenAlign.verifyNode(rect[0]);
+            ObjectOpenAlign.verifyNode(rect[0], false);
 
         } else if (ProcessOpenAlign.calculation.methodSequencing === dna.MethodSequencing.LOCAL) {
             var node = null;
@@ -477,7 +557,9 @@ EventOpenAlign.clickPossibilityManual = function () {
                 node = nodes[nodes.length - 1][i];
                 $("#matrix rect[vx=" + node.x + "][vy=" + node.y + "]").attr('class', 'alignCandidateSelect');
             }
-
+        } else if (ProcessOpenAlign.calculation.methodSequencing === dna.MethodSequencing.SEMIGLOBAL) {
+            var node = null;
+            ObjectOpenAlign.verifyNode();
         }
 
         var elemMatrix = document.getElementById('matrix');
@@ -506,7 +588,7 @@ EventOpenAlign.resetScrollMatrix = function () {
     var eScrollTop = elemMatrix.scrollTop;
     var eScrollLeft = elemMatrix.scrollLeft;
 
-    $("#matrix").height($('body').height() - $(".menuDown").height() - $(".menuUp").height() - 10);
+    $("#matrix").height($('body').height() - $(".menuDown").height() - $(".menuUp").height() - 80);
     $("#matrix").width($('body').width() - 260);
 
     elemMatrix.scrollTop = eScrollTop;
@@ -630,6 +712,10 @@ ProcessOpenAlign.startProcess = function () {
 
     delete inputAlignResult.date;
 
+//    inputAlignResult.arrayMisMatch = new Array();
+//    inputAlignResult.arrayMisMatch["A-C"] = 10;
+
+
     this.calculation = dna.CalculationFactory.createCalculation(inputAlignResult);
     this.calculation.calculationNode();
     this.calculation.findAligns();
@@ -655,7 +741,7 @@ function start() {
         history.back();
     });
 
-    $("#matrix").height($('body').height() - $(".menuDown").height() - $(".menuUp").height() - 10);
+    $("#matrix").height($('body').height() - $(".menuDown").height() - $(".menuUp").height() - 80);
     $("#matrix").width($('body').width() - 260);
 
 }
@@ -701,13 +787,13 @@ i18n.init(function (t) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="EventOpenAlign.html">EventOpenAlign</a></li><li><a href="ObjectOpenAlign.html">ObjectOpenAlign</a></li><li><a href="ProcessOpenAlign.html">ProcessOpenAlign</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_importScripts">_importScripts</a></li><li><a href="global.html#findNextAlign">findNextAlign</a></li><li><a href="global.html#formattedDate">formattedDate</a></li><li><a href="global.html#ImportScripts">ImportScripts</a></li><li><a href="global.html#openAlign">openAlign</a></li><li><a href="global.html#refreshList">refreshList</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#widthDefault">widthDefault</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AbstractCalculation.html">AbstractCalculation</a></li><li><a href="Calculation.html">Calculation</a></li><li><a href="CalculationFactory.html">CalculationFactory</a></li><li><a href="CalculationGlobal.html">CalculationGlobal</a></li><li><a href="CalculationLocal.html">CalculationLocal</a></li><li><a href="CalculationSemiGlobal.html">CalculationSemiGlobal</a></li><li><a href="EventOpenAlign.html">EventOpenAlign</a></li><li><a href="InputAlign.html">InputAlign</a></li><li><a href="InputAlignGlobalLocal.html">InputAlignGlobalLocal</a></li><li><a href="InputResultAlign.html">InputResultAlign</a></li><li><a href="Matrix.html">Matrix</a></li><li><a href="Node.html">Node</a></li><li><a href="NodeController.html">NodeController</a></li><li><a href="NodeDetail.html">NodeDetail</a></li><li><a href="ObjectOpenAlign.html">ObjectOpenAlign</a></li><li><a href="OrganizeNode.html">OrganizeNode</a></li><li><a href="OutputAlign.html">OutputAlign</a></li><li><a href="OutputResultAlign.html">OutputResultAlign</a></li><li><a href="ProcessOpenAlign.html">ProcessOpenAlign</a></li><li><a href="window.StringBuffer.html">StringBuffer</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_importScripts">_importScripts</a></li><li><a href="global.html#Connected">Connected</a></li><li><a href="global.html#findNextAlign">findNextAlign</a></li><li><a href="global.html#formattedDate">formattedDate</a></li><li><a href="global.html#ImportScripts">ImportScripts</a></li><li><a href="global.html#MethodSequencing">MethodSequencing</a></li><li><a href="global.html#openAlign">openAlign</a></li><li><a href="global.html#refreshList">refreshList</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#TypeElement">TypeElement</a></li><li><a href="global.html#widthDefault">widthDefault</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Sep 04 2014 20:31:38 GMT-0300 (BRT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Jan 13 2015 23:10:26 GMT-0200 (BRST)
 </footer>
 
 <script> prettyPrint(); </script>
