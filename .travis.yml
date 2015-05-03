@@ -1,3 +1,12 @@
 language: node_js
 node_js:
   - 0.10.26
+
+deploy:
+  provider: releases
+  api-key: "e47a43cbbdc295d9e7dd21cf83c886a92b744b51"
+  file:
+    - "/home/travis/build/DNA-Sequence/dna-sequence-core/webkitbuilds/releases/DNA/*"
+  skip_cleanup: true
+  on:
+    tags: true
