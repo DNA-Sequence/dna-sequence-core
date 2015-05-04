@@ -4,9 +4,8 @@ node_js:
 
 deploy:
   provider: releases
-  api-key: "e47a43cbbdc295d9e7dd21cf83c886a92b744b51"
-  file:
-    - "/home/travis/build/DNA-Sequence/dna-sequence-core/webkitbuilds/releases/DNA/*"
+  api-key: "ee7fee4147d9394553c71cd96a3e4d1e1ea7ed51"
+  file: "/home/travis/build/DNA-Sequence/dna-sequence-core/webkitbuilds/releases/DNA/mac/DNA.app"
   skip_cleanup: true
   on:
     tags: true
