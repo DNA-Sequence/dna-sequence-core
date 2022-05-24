@@ -17,7 +17,7 @@
     "grunt-init": "~0.3.1"
   },
   "devDependencies": {
-    "grunt": "^0.4.4",
+    "grunt": ">=1.5.2",
     "grunt-node-webkit-builder": "^0.1.20",
     "grunt-cli": "0.1.6",
     "grunt-contrib-jshint": "~0.1.1",
